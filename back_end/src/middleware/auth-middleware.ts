@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt-utils";
+import type { Role } from "../types/user.type";
+import { request } from "node:http";
 
-export interface AuthRequest extends Request {
+interface AuthRequest extends Request {
   user?: {
-    user_id: string;
-    role: "admin" | "manager" | "employee";
+    id: string;
+    role: Role;
   };
 }
 export function authMiddleware(
@@ -12,21 +14,20 @@ export function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const token = req.cookies.token;
+  if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = verifyToken(token);
     req.user = {
-      user_id: decoded.user_id,
-      role: decoded.role,
+      id: decoded.user_id,
+      role: decoded.role as Role,
     };
+
     next();
+    
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized" });
   }
