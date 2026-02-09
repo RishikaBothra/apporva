@@ -15,5 +15,7 @@ export const env = {
     NODE_ENV: process.env.NODE_ENV || 'dev',
     ALLOWED_ORIGIN: requireEnv('ALLOWED_ORIGIN'),
     DATABASE_URL: requireEnv('DATABASE_URL'),
+    JWT_SECRET: requireEnv('JWT_SECRET'),
+    JWT_EXPIRES_IN: requireEnv('JWT_EXPIRES_IN'),
 }
 
