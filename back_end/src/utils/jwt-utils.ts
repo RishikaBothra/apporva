@@ -22,10 +22,10 @@ export function generateToken(payload: { id: string; role: Role }): string {
   return token;
 }
 
-export function verifyToken(token: string): { user_id: string; role: Role } {
+export function verifyToken(token: string): { id: string; role: Role } {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as {
-      user_id: string;
+      id: string;
       role: Role;
     };
 
