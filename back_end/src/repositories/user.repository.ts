@@ -3,7 +3,7 @@ import { users } from "../db/schema/user";
 import { eq } from "drizzle-orm";
 
 export async function findUserByEmail(email: string) {
-  const result = await db()
+  const result = await db
     .select()
     .from(users)
     .where(eq(users.email, email));
@@ -17,7 +17,7 @@ export async function createUser(data: {
   password: string;
   role: string;
 }) {
-  const result = await db()
+  const result = await db
     .insert(users)
     .values({
       fullName: data.fullName,
