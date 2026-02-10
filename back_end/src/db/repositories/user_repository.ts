@@ -2,13 +2,16 @@ import { db } from "../db.client";
 import { users } from "../schema/user";
 import { eq } from "drizzle-orm";
 
-export async function findUserByEmail(email: string): Promise<typeof users.$inferSelect | undefined> {
+export async function findUserByEmail(
+  email: string
+): Promise<{ email: string } | null> {
+
   const result = await db()
-    .select()
+    .select({ email: users.email })
     .from(users)
     .where(eq(users.email, email));
 
-  return result[0];
+  return result[0] ?? null;
 }
 
 export async function createUser(data: {
