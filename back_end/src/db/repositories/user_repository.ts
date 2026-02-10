@@ -1,9 +1,9 @@
-import { db } from "../db/db.client";
-import { users } from "../db/schema/user";
+import { db } from "../db.client";
+import { users } from "../schema/user";
 import { eq } from "drizzle-orm";
 
-export async function findUserByEmail(email: string) {
-  const result = await db
+export async function findUserByEmail(email: string): Promise<typeof users.$inferSelect | undefined> {
+  const result = await db()
     .select()
     .from(users)
     .where(eq(users.email, email));
@@ -15,9 +15,9 @@ export async function createUser(data: {
   fullName: string;
   email: string;
   password: string;
-  role: string;
-}) {
-  const result = await db
+  role: "employee" | "manager" | "admin";
+}): Promise<typeof users.$inferSelect> {
+  const result = await db()
     .insert(users)
     .values({
       fullName: data.fullName,

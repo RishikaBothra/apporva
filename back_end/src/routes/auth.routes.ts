@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { signupService } from "../services/auth.service";
+import { signupService } from "../services/authService";
 
 const router = Router();
 
@@ -15,11 +15,10 @@ router.post("/signup", async (req, res) => {
   try {
     const data = signupSchema.parse(req.body);
 
-    const user = await signupService(data);
+    await signupService(data);
 
     return res.status(201).json({
       message: "Signup Successful",
-      user,
     });
 
    } catch (err: any) {

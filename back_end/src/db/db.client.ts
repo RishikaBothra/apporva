@@ -1,8 +1,15 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import * as schema from "../db/schema/user";
 import { env } from "../config/env";
 
-const sql = postgres(env.DATABASE_URL);
+let dbInstance: ReturnType<typeof drizzle> | null = null;
 
-export const db = drizzle(sql);
+export const db = () => {
+  if (!dbInstance) {
+    const sql = postgres(env.DATABASE_URL);
+    dbInstance = drizzle(sql, { schema });
+  }
 
+  return dbInstance;
+};

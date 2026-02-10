@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { findUserByEmail, createUser } from "../repositories/user.repository";
+import { findUserByEmail, createUser } from "../db/repositories/user_repository";
 
 type SignupInput = {
   fullName: string;
@@ -8,7 +8,7 @@ type SignupInput = {
   role: "employee" | "manager" | "admin";
 };
 
-export async function signupService(input: SignupInput) {
+export async function signupService(input: SignupInput): Promise<void> {
   const existingUser = await findUserByEmail(input.email);
 
   if (existingUser) {
@@ -23,11 +23,4 @@ export async function signupService(input: SignupInput) {
     password: hashedPassword,
     role: input.role,
   });
-
-  return {
-    id: user.id,
-    fullName: user.fullName,
-    email: user.email,
-    role: user.role,
-  };
 }
