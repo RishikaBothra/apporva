@@ -1,11 +1,9 @@
 import { Response,Request } from "express";
-import dotenv from "dotenv";
-dotenv.config();
-
+import { env } from "../src/config/env";
 
 const COOKIE_NAME = "token";
 
-const isprod = process.env.NODE_ENV === "prod";
+const isprod = env.NODE_ENV === "prod";
 
 export function setAuthCookie(
     req: Request,
