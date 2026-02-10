@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { Role } from "src/types/user.type";
 
-export function generateToken(payload: { id: string; role: Role }): string {
+export function generateToken(payload: { id: number, role: Role }): string {
   if (!payload) {
     throw new Error("No Playload Found!");
   }
@@ -22,10 +22,10 @@ export function generateToken(payload: { id: string; role: Role }): string {
   return token;
 }
 
-export function verifyToken(token: string): { id: string; role: Role } {
+export function verifyToken(token: string): { id: number; role: Role } {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as {
-      id: string;
+      id: number;
       role: Role;
     };
 

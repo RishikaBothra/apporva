@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { signupService } from "../services/authService";
+import { signupService, signinService } from "../services/authService";
+import { env } from "src/config/env";
 
 const router = Router();
 
@@ -27,12 +28,52 @@ router.post("/signup", async (req, res) => {
         message: "Invalid input",
         errors: err.issues,
       });
+    } else if (err.message.includes("User already exists")) {
+      return res.status(409).json({
+        message: "User already exists",
+      });
+    } else if (err instanceof Error && err.message.includes("[Database Error]")) {
+      return res.status(500).json({
+        message: "Internal server error",
+      });
     }
 
     return res.status(500).json({
       message: err.message || "Internal server error",
     });
   }
+});
+
+const signinSchema = z.object({
+  email: z.email().endsWith("@projectapprova.com"),
+  password: z.string().min(8),
+});
+
+router.post("/signin", async (req, res) => {
+    try {
+        const { email, password } = signinSchema.parse(req.body);
+
+        const token = await signinService(email, password);
+
+        res.cookie("auth_token", token, {
+            httpOnly: true,
+            secure: env.NODE_ENV === "prod",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({ success: true });
+    } catch (err) {
+        if (
+            err instanceof Error &&
+            (err.message.includes("Invalid credentials") ||
+             err.message.includes("User not found"))
+        ) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        return res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 export default router;
