@@ -1,13 +1,8 @@
-import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { env } from "src/config/env";
+import { env } from "../config/env";
 
-let dbInstance: NodePgDatabase | null = null;
+const sql = postgres(env.DATABASE_URL);
 
-export const db = (): NodePgDatabase => {
-    if (!dbInstance) {
-        const sql = postgres(env.DATABASE_URL);
-        dbInstance = drizzle(sql);
-    }
-    return dbInstance;
-};
+export const db = drizzle(sql);
+

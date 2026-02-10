@@ -6,13 +6,7 @@ const router = Router();
 
 const signupSchema = z.object({
   fullName: z.string().min(1),
-  email: z
-    .string()
-    .email()
-    .refine(
-      (val) => val.endsWith("@projectapprova.com"),
-      { message: "Email must end with @projectapprova.com" }
-    ),
+  email: z.email().endsWith("@projectapprova.com"),
   password: z.string().min(8),
   role: z.enum(["employee", "manager", "admin"]),
 });
