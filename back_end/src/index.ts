@@ -1,3 +1,4 @@
+import authRoutes from "./routes/auth.routes";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { env } from "./config/env";
@@ -13,6 +14,8 @@ app.use(
         credentials: true,
     }),
 );
+
+app.use("/auth", authRoutes);
 
 app.get("/", (_req: Request, res: Response) => {
     res.json("i am alive!");
