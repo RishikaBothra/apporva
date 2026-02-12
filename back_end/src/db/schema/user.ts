@@ -1,4 +1,5 @@
-import { pgTable, varchar, timestamp, serial } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, serial, pgEnum } from "drizzle-orm/pg-core";
+export const roleEnum = pgEnum("role", ["employee", "manager", "admin"]);
 
 export const users = pgTable("users", {
     id: serial().primaryKey(),
@@ -7,5 +8,6 @@ export const users = pgTable("users", {
     password: varchar("password", { length: 60 }).notNull(),
     created_at: timestamp("created_at").defaultNow().notNull(),
     updated_at: timestamp("updated_at").defaultNow().notNull(),
-    role: varchar("role", { length: 20 }).notNull(),
+    role: roleEnum("role").notNull(),
 });
+export type UserRole = (typeof roleEnum.enumValues)[number];
