@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
 import { findUserByEmail, createUser } from "../db/repositories/user_repository";
+import type { UserRole } from "../db/schema/user";
 
 type SignupInput = {
   fullName: string;
   email: string;
   password: string;
-  role: "employee" | "manager" | "admin";
+  role: UserRole;
 };
 
 export async function signupService(input: SignupInput): Promise<void> {
