@@ -10,8 +10,12 @@ import { user } from "./user";
 export const team = pgTable("team", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  created_by: integer("created_by")
+  managerId:integer("manager_id")
+  .references(()=>user.id)
+  .notNull()
+  .unique(),
+  createdBy: integer("created_by")
     .references(() => user.id)
     .notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
