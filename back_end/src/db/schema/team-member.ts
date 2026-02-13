@@ -2,7 +2,7 @@ import { pgTable, integer, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { team } from "./team";
 
-export const team_member = pgTable("teamMember", {
+export const teamMember = pgTable("team_member", {
   userId: integer("user_id")
     .references(() => user.id)
     .notNull(),

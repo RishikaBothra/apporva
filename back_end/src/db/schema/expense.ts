@@ -9,8 +9,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
-const expense_status = pgEnum("expense_status", ["accepted", "rejected"]);
-
 export const expense = pgTable("expense", {
   id: serial("id").primaryKey(),
 
@@ -21,7 +19,12 @@ export const expense = pgTable("expense", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   amount: integer("amount").notNull(),
-  status: expense_status("status").notNull(),
+  status: text("status", {
+    enum: ["draft", "submitted", "accepted", "rejected"],
+  })
+    .notNull()
+    .default("draft"),
+    
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
