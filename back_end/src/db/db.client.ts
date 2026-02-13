@@ -10,6 +10,5 @@ export const db = () => {
     const sql = postgres(env.DATABASE_URL);
     dbInstance = drizzle(sql, { schema });
   }
-
   return dbInstance;
 };
