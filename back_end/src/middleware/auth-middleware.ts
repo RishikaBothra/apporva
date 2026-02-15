@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt-utils";
 import type { Role } from "../types/user.type";
 
-
 interface AuthRequest extends Request {
   user?: {
-    id: string;
+    id: number;
     role: Role;
   };
 }
+
 export function authMiddleware(
   req: AuthRequest,
   res: Response,

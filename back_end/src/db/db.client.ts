@@ -3,13 +3,12 @@ import postgres from "postgres";
 import * as schema from "../db/schema/index";
 import { env } from "../config/env";
 
-let dbInstance: ReturnType<typeof drizzle> | null = null;
+let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export const db = () => {
   if (!dbInstance) {
     const sql = postgres(env.DATABASE_URL);
     dbInstance = drizzle(sql, { schema });
   }
-
   return dbInstance;
 };
