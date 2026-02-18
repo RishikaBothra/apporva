@@ -8,6 +8,6 @@ export const user = pgTable("user", {
     password: varchar("password", { length: 60 }).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    role: roleEnum("role").notNull(),
+    role: roleEnum("role").notNull().default("employee"),
 });
 export type UserRole = (typeof roleEnum.enumValues)[number];
