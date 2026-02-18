@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import { Role } from "src/types/user.type";
+import { Role } from "src/types/role.type";
 
 export function generateToken(payload: { id: number, role: Role }): string {
   if (!payload) {
