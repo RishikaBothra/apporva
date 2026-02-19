@@ -9,7 +9,7 @@ Team.post(
   "/",
   authMiddleware,
   requireRole("admin"),
-  async (req: Request, res: Response) => {
+  async (req: Request & { user?: { id: number } }, res: Response) => {
     const teamSchema = z.object({
       name: z.string().min(2).max(100),
       managerEmail: z.string().email().endsWith("@projectapprova.com"),
