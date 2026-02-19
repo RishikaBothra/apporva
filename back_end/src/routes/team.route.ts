@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { z } from "zod";
 import { role } from "../types/user.type";
-import { createTeam } from "../db/repositories/team_repository";
+import { createTeam, findTeamByManagerId, findTeamByName } from "../db/repositories/team_repository";
 
 const router = Router();
 
@@ -27,10 +27,27 @@ router.post(
       const { name, managerId } = parsed.data;
       const userId = req.user.id;
 
+      const existingTeam = await findTeamByName(name);
+
+      if (existingTeam) {
+        return res.status(409).json({
+          message: "Team name already exists",
+        });
+      }
+
+      const existingManager = await findTeamByManagerId(managerId);
+      
+      if (existingManager) {
+        return res.status(409).json({
+          message: "Manager is already assigned to another team",
+        });
+      }
+
       await createTeam({ name, managerId, userId });
 
       return res.status(201).json({ success: true });
     } catch (err: any) {
+      console.error("Error creating team:", err);
       return res.status(500).json({ message: "Failed to create team" });
     }
   },

@@ -1,5 +1,5 @@
 import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./user";
+import { users } from "./user";
 import { expense } from "./expense";
 
 export const comment = pgTable("comment", {
@@ -10,7 +10,7 @@ export const comment = pgTable("comment", {
     .notNull(),
 
   userId: integer("user_id")
-    .references(() => user.id)
+    .references(() => users.id)
     .notNull(),
 
   content: text("content").notNull(),
