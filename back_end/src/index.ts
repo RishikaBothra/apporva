@@ -1,5 +1,5 @@
 import authRoutes from "./routes/auth.routes";
-import Team from "./routes/team";
+import Team from "./routes/team.routes";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { env } from "./config/env";
