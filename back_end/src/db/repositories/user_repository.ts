@@ -2,7 +2,7 @@ import { db } from "../db.client";
 import { user } from "../schema/user";
 import { eq } from "drizzle-orm";
 import type { UserRole } from "../schema/user";
-import { Role } from "src/types/role.type";
+import { Role } from "src/types/user.type";
 
 export async function findUserByEmail(email: string): Promise<
     | {

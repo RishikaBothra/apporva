@@ -5,7 +5,7 @@ import {
 } from "../db/repositories/user_repository";
 import type { UserRole } from "../db/schema/user";
 import { generateToken } from "src/utils/jwt-utils";
-import { Role } from "src/types/role.type";
+import { Role } from "src/types/user.type";
 
 type SignupInput = {
     fullName: string;
