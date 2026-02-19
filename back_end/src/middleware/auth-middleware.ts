@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt-utils";
-import type { Role } from "../types/role.type";
+import type { Role } from "../types/user.type";
 
 interface AuthRequest extends Request {
   user?: {
@@ -15,7 +15,6 @@ export function authMiddleware(
   next: NextFunction,
 ) {
  const token = req.cookies.auth_token;
- console.log("Received token:", token); // Debugging log
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
