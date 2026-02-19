@@ -1,14 +1,7 @@
-import type { Role } from "./role.type";
+export const role = {
+  admin: "admin",
+  manager: "manager",
+  employee: "employee",
+} as const;
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: number;
-        role: Role;
-      };
-    }
-  }
-}
-
-export {};
+export type Role = (typeof role)[keyof typeof role];
