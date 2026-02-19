@@ -11,7 +11,7 @@ type CreateTeamInput = {
 
 export async function createTeam(
   input: CreateTeamInput,
-) {
+):Promise<{ id: number; name: string; managerId: number; createdBy: number }> {
   const manager = await db().query.user.findFirst({
     where: eq(user.email, input.managerEmail),
   });
@@ -28,7 +28,6 @@ export async function createTeam(
     .insert(team)
     .values({
       name: input.name,
-      adminId: input.adminId,
       managerId: manager.id,
       createdBy: input.adminId,
     })
@@ -39,5 +38,5 @@ export async function createTeam(
     .set({ role: "manager" })
     .where(eq(user.id, manager.id));
 
-  return newTeam;
+  return newTeam[0];
 }

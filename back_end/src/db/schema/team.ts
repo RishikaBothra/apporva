@@ -19,7 +19,4 @@ export const team = pgTable("team", {
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 
-  adminId: integer("admin_id")
-  .notNull()
-  .references(() => user.id),
 });
