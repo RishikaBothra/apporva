@@ -2,8 +2,9 @@ import {
   createTeam,
   findTeamByManagerId,
   findTeamByName,
+  findUserById,
 } from "../db/repositories/team_repository";
-import { CreateTeamInput} from "src/types/team.type";
+import { CreateTeamInput } from "src/types/team.type";
 
 export async function createTeamService(input: CreateTeamInput) {
   const { name, managerId, userId } = input;
@@ -14,6 +15,14 @@ export async function createTeamService(input: CreateTeamInput) {
     throw new Error("Team name already exists");
   }
 
+  const isManagerValid = await findUserById(managerId);
+  if (!isManagerValid) {
+    throw new Error("Manager does not exist");
+  }
+  if (isManagerValid.role !== "manager") {
+    throw new Error("User is not a manager");
+  }
+
   const existingManager = await findTeamByManagerId(managerId);
 
   if (existingManager) {
@@ -22,5 +31,5 @@ export async function createTeamService(input: CreateTeamInput) {
 
   await createTeam({ name, managerId, userId });
 
-    return { success: true };
+  return;
 }
