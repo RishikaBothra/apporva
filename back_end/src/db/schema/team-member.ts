@@ -1,10 +1,10 @@
 import { pgTable, integer, timestamp } from "drizzle-orm/pg-core";
-import { user } from "./user";
+import { users } from "./user";
 import { team } from "./team";
 
 export const teamMember = pgTable("team_member", {
   userId: integer("user_id")
-    .references(() => user.id)
+    .references(() => users.id)
     .notNull(),
 
   teamId: integer("team_id")

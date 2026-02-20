@@ -7,13 +7,13 @@ import {
   timestamp,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import { user } from "./user";
+import { users } from "./user";
 
 export const expense = pgTable("expense", {
   id: serial("id").primaryKey(),
 
   userId: integer("user_id")
-    .references(() => user.id)
+    .references(() => users.id)
     .notNull(),
 
   title: varchar("title", { length: 255 }).notNull(),

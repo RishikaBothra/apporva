@@ -1,5 +1,5 @@
 import { db } from "../db.client";
-import { user } from "../schema/user";
+import { users } from "../schema/user";
 import { eq } from "drizzle-orm";
 import type { UserRole } from "../schema/user";
 import { Role } from "src/types/user.type";
@@ -15,13 +15,13 @@ export async function findUserByEmail(email: string): Promise<
 > {
     const result = await db()
         .select({
-            id: user.id,
-            email: user.email,
-            password: user.password,
-            role: user.role,
+            id: users.id,
+            email: users.email,
+            password: users.password,
+            role: users.role,
         })
-        .from(user)
-        .where(eq(user.email, email));
+        .from(users)
+        .where(eq(users.email, email));
 
     return result[0] ?? null;
 }
@@ -34,7 +34,7 @@ export async function createUser(data: {
 }): Promise<void> {
     try {
         await db()
-            .insert(user)
+            .insert(users)
             .values({
                 fullName: data.fullName,
                 email: data.email,
