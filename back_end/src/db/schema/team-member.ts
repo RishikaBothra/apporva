@@ -8,7 +8,7 @@ export const teamMember = pgTable("team_member", {
     .notNull(),
 
   teamId: integer("team_id")
-    .references(() => team.id)
+    .references(() => team.id, { onDelete: "cascade" })
     .notNull(),
 
   joineDate: timestamp("joined_date").defaultNow().notNull(),

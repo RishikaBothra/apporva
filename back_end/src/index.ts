@@ -12,7 +12,7 @@ app.use(cookieParser());
 app.use(
     cors({
         origin: env.ALLOWED_ORIGIN,
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "DELETE"],
         credentials: true,
     }),
 );

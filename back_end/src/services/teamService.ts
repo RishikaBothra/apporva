@@ -5,6 +5,7 @@ import {
   findUserById,
 } from "../db/repositories/team_repository";
 import { CreateTeamInput } from "src/types/team.type";
+import { deleteTeam} from "../db/repositories/team_repository";
 
 export async function createTeamService(input: CreateTeamInput) {
   const { name, managerId, userId } = input;
@@ -33,3 +34,11 @@ export async function createTeamService(input: CreateTeamInput) {
 
   return;
 }
+
+export async function deleteTeamById(id: number): Promise<void> {
+  const deletedCount = await deleteTeam(id);
+  if (deletedCount === 0) {
+    throw new Error("Team not found");
+  }
+}
+

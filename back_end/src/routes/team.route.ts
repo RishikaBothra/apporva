@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth-middleware";
 import { z } from "zod";
 import { role } from "../types/user.type";
 import { createTeamService } from "../services/teamService";
+import { deleteTeamById } from "../services/teamService";
 
 const router = Router();
 
@@ -49,6 +50,19 @@ router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
     }
 
     return res.status(500).json({ message: "Failed to create team" });
+  }
+});
+
+router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid team id" });
+    }
+    await deleteTeamById(id);
+    res.status(200).json({ message: "Team deleted successfully" });
+  } catch (error: any) {
+    res.status(404).json({ message: error.message });
   }
 });
 

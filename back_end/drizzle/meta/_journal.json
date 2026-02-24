@@ -15,6 +15,13 @@
       "when": 1771528816916,
       "tag": "0001_graceful_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771680364299,
+      "tag": "0002_steady_random",
+      "breakpoints": true
     }
   ]
 }
