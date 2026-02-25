@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { signupService, signinService } from "../services/authService";
 import { env } from "src/config/env";
+import { setAuthCookie } from "src/cookie";
 
 const router = Router();
 
@@ -57,12 +58,7 @@ router.post("/signin", async (req, res) => {
 
     const { token } = await signinService(email, password);
 
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "prod",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(req, res, token);
 
     return res.status(200).json({ success: true });
   } catch (err) {

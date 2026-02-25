@@ -1,12 +1,12 @@
 import { Response,Request } from "express";
 import { env } from "../src/config/env";
 
-const COOKIE_NAME = "token";
+const COOKIE_NAME = "auth_token";
 
 const isprod = env.NODE_ENV === "prod";
 
 export function setAuthCookie(
-    req: Request,
+    _req: Request,
     res: Response,
     token: string,
 ){
@@ -14,5 +14,6 @@ export function setAuthCookie(
         httpOnly: true,
         secure: isprod,
         sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 }

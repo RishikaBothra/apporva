@@ -4,6 +4,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { env } from "./config/env";
 import cookieParser from "cookie-parser";
+import MyProfile from "./routes/user.route";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(
 
 app.use("/auth", authRoutes);
 app.use("/team", Team);
+app.use("/me", MyProfile);
 app.get("/", (_req: Request, res: Response) => {
     res.json("i am alive!");
 });
