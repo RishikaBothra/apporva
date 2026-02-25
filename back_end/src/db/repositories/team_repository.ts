@@ -3,6 +3,7 @@ import { db } from "../db.client";
 import { team } from "../schema/team";
 import { eq } from "drizzle-orm";
 import { users } from "../schema/user";
+import { teamMember } from "../schema/team-member";
 
 export async function createTeam(input: CreateTeamInput): Promise<void> {
   const { name, managerId, userId } = input;
@@ -44,3 +45,21 @@ export const deleteTeam = async (id: number): Promise<number> => {
     .returning({id: team.id})
   return deleted.length;
 };
+
+export async function findUsersByTeamId(
+    teamId: number,
+): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
+
+    const result = await db()
+        .select({
+            id: users.id,
+            fullName: users.fullName,
+            email: users.email,
+            role: users.role,
+        })
+        .from(teamMember)
+        .innerJoin(users, eq(teamMember.userId, users.id))
+        .where(eq(teamMember.teamId, teamId));
+
+    return result;
+}

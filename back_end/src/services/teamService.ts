@@ -6,6 +6,7 @@ import {
 } from "../db/repositories/team_repository";
 import { CreateTeamInput } from "src/types/team.type";
 import { deleteTeam} from "../db/repositories/team_repository";
+import { findUsersByTeamId } from "../db/repositories/team_repository";
 
 export async function createTeamService(input: CreateTeamInput) {
   const { name, managerId, userId } = input;
@@ -40,5 +41,30 @@ export async function deleteTeamById(id: number): Promise<void> {
   if (deletedCount === 0) {
     throw new Error("Team not found");
   }
+}
+
+export async function getMyTeamMembers(
+    managerId: number,
+): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
+
+    const manager = await findUserById(managerId);
+
+    if (!manager) {
+        throw new Error("User not found");
+    }
+
+    if (manager.role !== "Manager") {
+        throw new Error("Access denied");
+    }
+
+    const team = await findTeamByManagerId(managerId);
+
+    if (!team) {
+        throw new Error("Manager has no team");
+    }
+
+    const members = await findUsersByTeamId(team.id);
+
+    return members;
 }
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { role } from "../types/user.type";
 import { createTeamService } from "../services/teamService";
 import { deleteTeamById } from "../services/teamService";
+import { getMyTeamMembers } from "../services/teamService";
 
 const router = Router();
 
@@ -65,5 +66,34 @@ router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Respon
     res.status(404).json({ message: error.message });
   }
 });
+
+router.get("/my-team-members",authMiddleware(role.manager),async (req, res: Response): Promise<void> => {
+  try {
+    const members = await getMyTeamMembers(req.user.id);
+    res.status(200).json({data: members,});
+  } 
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === "User not found") {
+        res.status(404).json({message: "Manager not found.",});
+        return;
+      }
+
+      if (error.message === "Access denied") {
+        res.status(403).json({message: "You are not authorized to view team members.",});
+        return;
+      }
+
+      if (error.message === "Manager has no team") {
+        res.status(400).json({message: "No team assigned to this manager.",});
+        return;
+      }
+      
+      res.status(500).json({message: "Unexpected server error.",});
+      return;
+    }
+  }
+},
+);
 
 export default router;
