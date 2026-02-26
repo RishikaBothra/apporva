@@ -11,7 +11,6 @@ type SignupInput = {
     fullName: string;
     email: string;
     password: string;
-    role: UserRole;
 };
 
 export async function signupService(input: SignupInput): Promise<void> {
@@ -27,7 +26,7 @@ export async function signupService(input: SignupInput): Promise<void> {
         fullName: input.fullName,
         email: input.email,
         password: hashedPassword,
-        role: input.role,
+        role:"employee",
     });
 }
 
