@@ -15,17 +15,22 @@ router.get("/", authMiddleware(), (req: Request, res: Response) => {
   });
 });
 
-
 const changeRoleSchema = z.object({
   tragtedId: z.number(),
   newRole: z.enum(["employee", "manager", "admin"]),
+  platformSecret: z.string().optional(),
 });
+
 router.patch("/",authMiddleware("admin"),async (req: Request, res: Response) => {
     try {
-      const { tragtedId: userId, newRole } = changeRoleSchema.parse(req.body);
+      const {
+        tragtedId: userId,
+        newRole,
+        platformSecret,
+      } = changeRoleSchema.parse(req.body);
       const adminId = req.user.id;
 
-      await changeUserRoleService(adminId, newRole, userId);
+      await changeUserRoleService(adminId, newRole, userId, platformSecret);
 
       return res.status(200).json({
         success: true,
@@ -47,6 +52,10 @@ router.patch("/",authMiddleware("admin"),async (req: Request, res: Response) => 
       } else if (err.message.includes("User already has the specified role")) {
         return res.status(400).json({
           message: "User already has the specified role",
+        });
+      } else if (err.message.includes("Invalid platform secret")) {
+        return res.status(403).json({
+          message: "Invalid platform secret",
         });
       }
       return res.status(500).json({
