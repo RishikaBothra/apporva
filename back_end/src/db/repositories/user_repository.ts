@@ -46,3 +46,10 @@ export async function createUser(data: {
         );
     }
 }
+
+export async function updateUserRole(userId: number,newRole: UserRole): Promise<void> {
+  await db()
+  .update(users)
+  .set({ role: newRole })
+  .where(eq(users.id, userId));
+}

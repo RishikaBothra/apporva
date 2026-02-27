@@ -16,5 +16,6 @@ export const env = {
     ALLOWED_ORIGIN: requireEnv('ALLOWED_ORIGIN'),
     DATABASE_URL: requireEnv('DATABASE_URL'),
     JWT_SECRET: requireEnv('JWT_SECRET'),
+    PLATFORM_SECRET: requireEnv('PLATFORM_SECRET'),
 }
 
