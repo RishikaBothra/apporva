@@ -26,7 +26,6 @@ export async function signupService(input: SignupInput): Promise<void> {
         fullName: input.fullName,
         email: input.email,
         password: hashedPassword,
-        role:"employee",
     });
 }
 
