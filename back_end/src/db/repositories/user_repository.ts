@@ -30,7 +30,6 @@ export async function createUser(data: {
     fullName: string;
     email: string;
     password: string;
-    role: UserRole;
 }): Promise<void> {
     try {
         await db()
@@ -39,7 +38,6 @@ export async function createUser(data: {
                 fullName: data.fullName,
                 email: data.email,
                 password: data.password,
-                role: data.role,
             })
             .returning();
     } catch (error: any) {
