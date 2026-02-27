@@ -46,9 +46,7 @@ export const deleteTeam = async (id: number): Promise<number> => {
   return deleted.length;
 };
 
-export async function findUsersByTeamId(
-    teamId: number,
-): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
+export async function findUsersByTeamId(teamId: number,): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
 
     const result = await db()
         .select({
@@ -62,4 +60,36 @@ export async function findUsersByTeamId(
         .where(eq(teamMember.teamId, teamId));
 
     return result;
+}
+
+export async function findTeamByUserId(userId: number,): Promise<{ teamId: number } | null> {
+
+  const result = await db()
+    .select({teamId: teamMember.teamId,})
+    .from(teamMember)
+    .where(eq(teamMember.userId, userId));
+
+  return result[0] ?? null;
+}
+
+export async function findAllTeams() {
+  const result = await db()
+    .select()
+    .from(team);
+
+  return result;
+}
+
+export async function findTeamById(teamId: number,): Promise<{ id: number; name: string; managerId: number } | null> {
+
+  const result = await db()
+    .select({
+      id: team.id,
+      name: team.name,
+      managerId: team.managerId,
+    })
+    .from(team)
+    .where(eq(team.id, teamId));
+
+  return result[0] ?? null;
 }

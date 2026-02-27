@@ -7,6 +7,10 @@ import {
 import { CreateTeamInput } from "src/types/team.type";
 import { deleteTeam} from "../db/repositories/team_repository";
 import { findUsersByTeamId } from "../db/repositories/team_repository";
+import { role } from "../types/user.type";
+import { findTeamByUserId } from "../db/repositories/team_repository";
+import { findAllTeams } from "../db/repositories/team_repository";
+import { findTeamById } from "../db/repositories/team_repository";
 
 export async function createTeamService(input: CreateTeamInput) {
   const { name, managerId, userId } = input;
@@ -43,28 +47,48 @@ export async function deleteTeamById(id: number): Promise<void> {
   }
 }
 
-export async function getMyTeamMembers(
-    managerId: number,
-): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
+export async function getMyTeamMembersService(userId: number,requestedTeamId?: number,) {
+  const user = await findUserById(userId);
 
-    const manager = await findUserById(managerId);
+  if (!user) {throw new Error("User not found");}
 
-    if (!manager) {
-        throw new Error("User not found");
-    }
+  if (user.role === role.admin) {
+    if (!requestedTeamId) {throw new Error("Team id is required for admin");}
+    return await findUsersByTeamId(requestedTeamId);
+  }
 
-    if (manager.role !== "Manager") {
-        throw new Error("Access denied");
-    }
+  if (user.role === role.manager) {
+    const team = await findTeamByManagerId(userId);
+    if (!team) {throw new Error("Manager has no team");}
+    return await findUsersByTeamId(team.id);
+  }
 
-    const team = await findTeamByManagerId(managerId);
+  const team = await findTeamByUserId(userId);
+  if (!team) {throw new Error("User has no team");}
+  return await findUsersByTeamId(team.teamId);
+}
 
-    if (!team) {
-        throw new Error("Manager has no team");
-    }
+export async function getTeamDetailsService(userId: number,requestedTeamId?: number,) {
+  const user = await findUserById(userId);
 
-    const members = await findUsersByTeamId(team.id);
+  if (!user) {throw new Error("User not found");}
+  
+  if (user.role === role.admin) {
+    if (!requestedTeamId) {throw new Error("Team id is required for admin");}
+    return await findTeamById(requestedTeamId);
+  }
+  
+  if (user.role === role.manager) {return await findTeamByManagerId(userId);}
 
-    return members;
+  const team = await findTeamByUserId(userId);
+  if (!team) {throw new Error("User has no team");}
+  return await findTeamById(team.teamId);
+}
+
+export async function getAllTeamsService(userId: number) {
+  const user = await findUserById(userId);
+  if (!user) {throw new Error("User not found");}
+  if (user.role !== role.admin) {throw new Error("Access denied");}
+  return await findAllTeams();
 }
 

@@ -4,7 +4,9 @@ import { z } from "zod";
 import { role } from "../types/user.type";
 import { createTeamService } from "../services/teamService";
 import { deleteTeamById } from "../services/teamService";
-import { getMyTeamMembers } from "../services/teamService";
+import { getMyTeamMembersService } from "../services/teamService";
+import { getTeamDetailsService } from "../services/teamService";
+import { getAllTeamsService } from "../services/teamService";
 
 const router = Router();
 
@@ -54,46 +56,71 @@ router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
   }
 });
 
-router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ message: "Invalid team id" });
-    }
-    await deleteTeamById(id);
-    res.status(200).json({ message: "Team deleted successfully" });
-  } catch (error: any) {
-    res.status(404).json({ message: error.message });
+router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ message: "Invalid team id" });
+    return;
   }
-});
-
-router.get("/my-team-members",authMiddleware(role.manager),async (req, res: Response): Promise<void> => {
   try {
-    const members = await getMyTeamMembers(req.user.id);
-    res.status(200).json({data: members,});
-  } 
+    await deleteTeamById(id);
+    res.status(200).json({message: "Team deleted successfully",});
+  }
   catch (error: unknown) {
-    if (error instanceof Error) {
-      if (error.message === "User not found") {
-        res.status(404).json({message: "Manager not found.",});
-        return;
-      }
-
-      if (error.message === "Access denied") {
-        res.status(403).json({message: "You are not authorized to view team members.",});
-        return;
-      }
-
-      if (error.message === "Manager has no team") {
-        res.status(400).json({message: "No team assigned to this manager.",});
-        return;
-      }
-      
-      res.status(500).json({message: "Unexpected server error.",});
-      return;
-    }
+    const message = error instanceof Error? error.message: "Failed to delete team";
+    res.status(message === "Team not found" ? 404 : 500).json({message,});
   }
 },
 );
 
 export default router;
+
+router.get("/team-members",authMiddleware(),async (req, res: Response): Promise<void> => {
+  try {
+    const teamId = req.query.teamId? Number(req.query.teamId): undefined;
+    const result = await getMyTeamMembersService(
+      req.user.id,
+      teamId,
+    );
+    res.status(200).json({ data: result });
+  }
+  catch (error: unknown) {
+    res.status(400).json({
+      message:
+      error instanceof Error? error.message: "Failed to fetch team members",
+    });
+  }
+},
+);
+
+router.get("/team-details",authMiddleware(),async (req, res: Response): Promise<void> => {
+  try {
+    const teamId = req.query.teamId? Number(req.query.teamId): undefined;
+    const result = await getTeamDetailsService(
+      req.user.id,
+      teamId,
+    );
+    res.status(200).json({ data: result });
+  }
+  catch (error: unknown) {
+    res.status(400).json({
+      message:
+      error instanceof Error? error.message: "Failed to fetch team details",
+    });
+  }
+},
+);
+
+router.get("/all",authMiddleware(),async (req, res: Response): Promise<void> => {
+  try {
+    const result = await getAllTeamsService(req.user.id);
+    res.status(200).json({ data: result });
+  }
+  catch (error: unknown) {
+    res.status(403).json({
+      message:
+      error instanceof Error? error.message: "Access denied",
+    });
+  }
+},
+);
