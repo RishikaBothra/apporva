@@ -11,7 +11,7 @@ export async function findUserByEmail(email: string): Promise<
           password: string;
           role: Role;
       }
-    | undefined
+    | null
 > {
     const result = await db()
         .select({
@@ -52,4 +52,27 @@ export async function updateUserRole(userId: number,newRole: UserRole): Promise<
   .update(users)
   .set({ role: newRole })
   .where(eq(users.id, userId));
+}
+
+export async function updateUserById(
+  id: number,
+  data: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  }
+): Promise<boolean> {
+  try {
+    const result = await db()
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
+      .returning();
+
+    return result.length > 0;
+  } catch (error: any) {
+    throw new Error(
+      `[Database Error] Failed to update user: ${error.message}`
+    );
+  }
 }

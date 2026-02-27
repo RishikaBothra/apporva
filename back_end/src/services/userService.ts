@@ -1,6 +1,9 @@
 import { updateUserRole } from "src/db/repositories/user_repository";
 import { findUserById } from "src/db/repositories/team_repository";
 import { env } from "src/config/env";
+import { AppError } from "../utils/app-error";
+import { updateUserById } from "src/db/repositories/user_repository";
+import bcrypt from "bcrypt";
 
 export const changeUserRoleService = async (
   adminId: number,
@@ -28,3 +31,41 @@ export const changeUserRoleService = async (
 
   await updateUserRole(userId, newRole);
 };
+
+export async function updateProfile(
+  userId: number,
+  data: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  }
+): Promise<boolean> {
+  const updateData: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  } = {};
+
+  if (data.fullName) {
+    updateData.fullName = data.fullName;
+  }
+
+  if (data.email) {
+    updateData.email = data.email;
+  }
+
+  if (data.password) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    updateData.password = hashedPassword;
+  }
+
+  if (data.email && !data.email.endsWith("@projectapprova.com")) {
+    throw new AppError("Email must use the @projectapprova.com domain", "INVALID_EMAIL_DOMAIN", 400);
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new AppError("No fields provided for update", "NO_UPDATE_FIELDS", 400);
+  }
+
+  return await updateUserById(userId, updateData);
+}

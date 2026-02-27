@@ -6,6 +6,8 @@ import { env } from "./config/env";
 import cookieParser from "cookie-parser";
 import MyProfile from "./routes/user.route";
 import changeRole from "./routes/user.route";
+import userRoutes from "./routes/user.route";
+
 const app = express();
 
 app.use(express.json());
@@ -13,7 +15,7 @@ app.use(cookieParser());
 app.use(
     cors({
         origin: env.ALLOWED_ORIGIN,
-        methods: ["GET", "POST", "DELETE"],
+        methods: ["GET", "POST", "PATCH","DELETE"],
         credentials: true,
     }),
 );
@@ -22,6 +24,8 @@ app.use("/auth", authRoutes);
 app.use("/team", Team);
 app.use("/me", MyProfile);
 app.use("/role", changeRole);
+app.use("/user", userRoutes);
+
 app.get("/", (_req: Request, res: Response) => {
     res.json("i am alive!");
 });
