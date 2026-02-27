@@ -1,10 +1,7 @@
 import { updateUserRole } from "src/db/repositories/user_repository";
 import { findUserById } from "src/db/repositories/team_repository";
 
-export const changeUserRoleService = async (adminId: number, newRole: string, userId: number): Promise<void> => { 
-    if (newRole !== "employee" && newRole !== "manager" && newRole !== "admin") {
-        throw new Error("Invalid role. Role must be either 'employee', 'manager', or 'admin'.");
-    }
+export const changeUserRoleService = async (adminId: number, newRole: "employee" | "manager" | "admin", userId: number): Promise<void> => { 
     if (adminId === userId) {
         throw new Error("Users cannot change their own role.");
     }
