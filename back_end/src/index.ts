@@ -21,7 +21,7 @@ app.use(
 app.use("/auth", authRoutes);
 app.use("/team", Team);
 app.use("/me", MyProfile);
-app.use("/change-role", changeRole);
+app.use("/role", changeRole);
 app.get("/", (_req: Request, res: Response) => {
     res.json("i am alive!");
 });
