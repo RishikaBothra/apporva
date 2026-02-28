@@ -59,10 +59,6 @@ export async function updateProfile(
     updateData.password = hashedPassword;
   }
 
-  if (data.email && !data.email.endsWith("@projectapprova.com")) {
-    throw new AppError("Email must use the @projectapprova.com domain", "INVALID_EMAIL_DOMAIN", 400);
-  }
-
   if (Object.keys(updateData).length === 0) {
     throw new AppError("No fields provided for update", "NO_UPDATE_FIELDS", 400);
   }

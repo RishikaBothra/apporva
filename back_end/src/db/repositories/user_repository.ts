@@ -3,6 +3,7 @@ import { users } from "../schema/user";
 import { eq } from "drizzle-orm";
 import type { UserRole } from "../schema/user";
 import { Role } from "src/types/user.type";
+import { AppError } from "src/utils/app-error";
 
 export async function findUserByEmail(email: string): Promise<
     | {
@@ -71,8 +72,10 @@ export async function updateUserById(
 
     return result.length > 0;
   } catch (error: any) {
-    throw new Error(
-      `[Database Error] Failed to update user: ${error.message}`
-    );
+    // postgres unique violation code is 23505
+    if (error.code === "23505" && error.constraint?.includes("email")) {
+      throw new AppError("This email is already in use", "EMAIL_ALREADY_IN_USE", 409);
+    }
+    throw new Error(`[Database Error] Failed to update user: ${error.message}`);
   }
 }

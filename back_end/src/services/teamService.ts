@@ -3,9 +3,19 @@ import {
   findTeamByManagerId,
   findTeamByName,
   findUserById,
+  deleteTeam,
+  findTeamById,
+  getTeamMembership,
+  isUserInTeam,
+  removeUserFromTeam,
+
 } from "../db/repositories/team_repository";
 import { CreateTeamInput } from "src/types/team.type";
-import { deleteTeam} from "../db/repositories/team_repository";
+import { AppError } from "src/utils/app-error";
+import { db } from "src/db/db.client";
+import { team as teamSchema, teamMember as teamMemberSchema } from "../db/schema";
+import { eq } from "drizzle-orm";
+
 
 export async function createTeamService(input: CreateTeamInput) {
   const { name, managerId, userId } = input;
@@ -42,3 +52,136 @@ export async function deleteTeamById(id: number): Promise<void> {
   }
 }
 
+export async function addMemberService(
+  requesterId: number,
+  targetUserId: number,
+  teamId: number
+): Promise<void> {
+  const requester = await findUserById(requesterId);
+  const target = await findUserById(targetUserId);
+
+  if (!requester) {
+    throw new AppError("Requester account not found", "REQUESTER_NOT_FOUND", 404);
+  }
+
+  if (!target) {
+    throw new AppError("Target user not found", "TARGET_USER_NOT_FOUND", 404);
+  }
+
+  if (requester.role === "employee") {
+    throw new AppError("Employees are not allowed to add team members", "INSUFFICIENT_PERMISSIONS", 403);
+  }
+
+  if (requester.role === "manager" && target.role !== "employee") {
+    throw new AppError("Managers can only add employees to their team", "MANAGER_CAN_ONLY_ADD_EMPLOYEES", 403);
+  }
+
+  if (target.role === "admin") {
+    throw new AppError("Admins cannot be added as team members", "CANNOT_ADD_ADMIN", 400);
+  }
+
+  const team = await findTeamById(teamId);
+  if (!team) {
+    throw new AppError("Team does not exist", "TEAM_NOT_FOUND", 404);
+  }
+
+  if (target.role === "manager" && team.managerId) {
+    throw new AppError("This team already has a manager", "TEAM_ALREADY_HAS_MANAGER", 409);
+  }
+
+  const existing = await getTeamMembership(target.id);
+  if (existing) {
+    throw new AppError("This user is already assigned to a team", "USER_ALREADY_IN_TEAM", 409);
+  }
+
+  if (requester.role === "manager") {
+    const managerTeam = await findTeamByManagerId(requester.id);
+
+    if (!managerTeam) {
+      throw new AppError("You are not managing any team", "MANAGER_HAS_NO_TEAM", 403);
+    }
+
+    if (managerTeam.id !== teamId) {
+      throw new AppError("You can only add members to your own team", "WRONG_TEAM", 403);
+    }
+  }
+
+  // wrap the actual DB writes in a transaction
+  await db().transaction(async (tx) => {
+    await tx.insert(teamMemberSchema).values({ userId: target.id, teamId });
+
+    if (target.role === "manager") {
+      await tx.update(teamSchema).set({ managerId: target.id }).where(eq(teamSchema.id, teamId));
+    }
+  });
+}
+
+export async function removeMemberService(
+  requesterId: number,
+  targetUserId: number
+): Promise<void> {
+  const requester = await findUserById(requesterId);
+  const target = await findUserById(targetUserId);
+
+  if (!requester) {
+    throw new AppError("Requester not found", "REQUESTER_NOT_FOUND", 404);
+  }
+
+  if (!target) {
+    throw new AppError("Target user not found", "TARGET_USER_NOT_FOUND", 404);
+  }
+
+  if (requester.role === "employee") {
+    throw new AppError("Employees cannot remove team members", "INSUFFICIENT_PERMISSIONS", 403);
+  }
+
+  if (requester.id === target.id) {
+    throw new AppError("You cannot remove yourself", "CANNOT_REMOVE_SELF", 400);
+  }
+
+  if (target.role === "admin") {
+    throw new AppError("Admins cannot be removed from teams", "CANNOT_REMOVE_ADMIN", 403);
+  }
+
+  if (requester.role === "manager") {
+    if (target.role !== "employee") {
+      throw new AppError("Managers can only remove employees", "MANAGER_CAN_ONLY_REMOVE_EMPLOYEES", 403);
+    }
+
+    const managerTeam = await findTeamByManagerId(requester.id);
+    if (!managerTeam) {
+      throw new AppError("You are not managing any team", "MANAGER_HAS_NO_TEAM", 403);
+    }
+
+    const belongsToTeam = await isUserInTeam(target.id, managerTeam.id);
+    if (!belongsToTeam) {
+      throw new AppError("This employee is not in your team", "USER_NOT_IN_YOUR_TEAM", 404);
+    }
+
+    await removeUserFromTeam(target.id);
+    return;
+  }
+
+  // admin removing a manager — wrap in transaction
+  if (target.role === "manager") {
+    const managedTeam = await findTeamByManagerId(target.id);
+
+    await db().transaction(async (tx) => {
+      if (managedTeam) {
+        await tx.update(teamSchema).set({ managerId: null as unknown as number }).where(eq(teamSchema.id, managedTeam.id));
+      }
+
+      await tx.delete(teamMemberSchema).where(eq(teamMemberSchema.userId, target.id));
+    });
+
+    return;
+  }
+
+  // admin removing an employee
+  const membership = await getTeamMembership(target.id);
+  if (!membership) {
+    throw new AppError("This user is not in any team", "USER_NOT_IN_ANY_TEAM", 404);
+  }
+
+  await removeUserFromTeam(target.id);
+}

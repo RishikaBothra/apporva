@@ -3,9 +3,8 @@ import type { Request, Response } from "express";
 import { authMiddleware } from "src/middleware/auth-middleware";
 import { z, ZodError } from "zod";
 import { changeUserRoleService } from "src/services/userService";
-import { removeMemberService } from "src/services/removeMemberService";
 import {updateProfile} from "../services/userService";
-
+import { removeMemberService } from "../services/teamService";
 const router = Router();
 
 router.get("/", authMiddleware(), (req: Request, res: Response) => {
@@ -73,7 +72,6 @@ router.delete(
   async (req, res) => {
     try {
       const targetId = Number(req.params.id);
-      const { newManagerId } = req.body || {};
 
       if (isNaN(targetId)) {
         return res.status(400).json({ message: "Invalid user id" });
