@@ -73,9 +73,7 @@ router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Respon
 },
 );
 
-export default router;
-
-router.get("/team-members",authMiddleware(),async (req, res: Response): Promise<void> => {
+router.get("/members",authMiddleware(),async (req, res: Response): Promise<void> => {
   try {
     const teamId = req.query.teamId? Number(req.query.teamId): undefined;
     const result = await getMyTeamMembersService(
@@ -93,7 +91,7 @@ router.get("/team-members",authMiddleware(),async (req, res: Response): Promise<
 },
 );
 
-router.get("/team-details",authMiddleware(),async (req, res: Response): Promise<void> => {
+router.get("/details",authMiddleware(),async (req, res: Response): Promise<void> => {
   try {
     const teamId = req.query.teamId? Number(req.query.teamId): undefined;
     const result = await getTeamDetailsService(
@@ -124,3 +122,5 @@ router.get("/all",authMiddleware(),async (req, res: Response): Promise<void> => 
   }
 },
 );
+
+export default router;

@@ -72,9 +72,13 @@ export async function findTeamByUserId(userId: number,): Promise<{ teamId: numbe
   return result[0] ?? null;
 }
 
-export async function findAllTeams() {
+export async function findAllTeams(): Promise<{ id: number; name: string; managerId: number }[]> {
   const result = await db()
-    .select()
+    .select({
+      id: team.id,
+      name: team.name,
+      managerId: team.managerId,
+    })
     .from(team);
 
   return result;
