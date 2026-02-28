@@ -15,6 +15,31 @@ const teamSchema = z.object({
   managerId: z.number(),
 });
 
+const teamMembersQuerySchema = z.object({
+  teamId: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number(val) : undefined))
+    .refine((val) => val === undefined || (Number.isInteger(val) && val > 0), {
+      message: "teamId must be a positive integer",
+    }),
+});
+
+const teamDetailsQuerySchema = z.object({
+  teamId: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number(val) : undefined))
+    .refine(
+      (val) =>
+        val === undefined ||
+        (Number.isInteger(val) && val > 0),
+      {
+        message: "teamId must be a positive integer",
+      }
+    ),
+});
+
 router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
   try {
     const parsed = teamSchema.safeParse(req.body);
@@ -70,57 +95,94 @@ router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Respon
     const message = error instanceof Error? error.message: "Failed to delete team";
     res.status(message === "Team not found" ? 404 : 500).json({message,});
   }
-},
-);
+});
 
 router.get("/members",authMiddleware(),async (req, res: Response): Promise<void> => {
   try {
-    const teamId = req.query.teamId? Number(req.query.teamId): undefined;
-    const result = await getMyTeamMembersService(
-      req.user.id,
-      teamId,
-    );
+    const parsed = teamMembersQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({message: "Invalid query parameters",});
+      return;  
+    }
+    
+    const teamId = parsed.data.teamId;
+    const result = await getMyTeamMembersService(req.user.id,teamId);
     res.status(200).json({ data: result });
+
   }
   catch (error: unknown) {
-    res.status(400).json({
-      message:
-      error instanceof Error? error.message: "Failed to fetch team members",
-    });
+    if (error instanceof Error) {
+      if (error.message === "User not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+
+      if (error.message === "Access denied") {
+        res.status(403).json({ message: error.message });
+        return;
+      }
+      
+      res.status(400).json({ message: error.message });
+      return;
+    }
+    
+    res.status(500).json({message: "Internal server error",});
   }
-},
-);
+});
 
 router.get("/details",authMiddleware(),async (req, res: Response): Promise<void> => {
   try {
-    const teamId = req.query.teamId? Number(req.query.teamId): undefined;
+    const parsed = teamDetailsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({message: "Invalid query parameters",});
+      return;
+    }
+
+    const teamId = parsed.data.teamId;
     const result = await getTeamDetailsService(
       req.user.id,
-      teamId,
+      teamId
     );
     res.status(200).json({ data: result });
   }
-  catch (error: unknown) {
-    res.status(400).json({
-      message:
-      error instanceof Error? error.message: "Failed to fetch team details",
-    });
-  }
-},
-);
 
-router.get("/all",authMiddleware(),async (req, res: Response): Promise<void> => {
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === "User not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      
+      if (error.message === "Access denied") {
+        res.status(403).json({ message: error.message });
+        return;
+      }
+      
+      if (error.message === "Team not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+
+      res.status(400).json({ message: error.message });
+      return;
+    }
+
+    res.status(500).json({message: "Internal server error",});
+  }
+});
+
+router.get("/all",authMiddleware(role.admin),async (req, res: Response): Promise<void> => {
   try {
     const result = await getAllTeamsService(req.user.id);
     res.status(200).json({ data: result });
   }
   catch (error: unknown) {
-    res.status(403).json({
-      message:
-      error instanceof Error? error.message: "Access denied",
-    });
+    if (error instanceof Error) {
+      res.status(500).json({message: error.message,});
+      return;
+    }
+    res.status(500).json({message: "Internal server error",});
   }
-},
-);
+});
 
 export default router;
