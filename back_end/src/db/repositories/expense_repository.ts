@@ -20,8 +20,6 @@ export const createExpense = async ({
     amount,
     userId: createdBy,
     status: "draft",
-    createdAt: new Date(),
-    updatedAt: new Date(),
   });
 
   return { msg: "status: draft" };
