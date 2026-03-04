@@ -68,7 +68,7 @@ router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Respon
 });
 
 router.post(
-  "/add-member",
+  "/add/member",
   authMiddleware(),
   async (req: Request, res: Response) => {
     try {

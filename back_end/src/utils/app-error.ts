@@ -1,11 +1,9 @@
-export class AppError extends Error {
+export type AppError = {
+  message: string;
   code: string;
   status: number;
+};
 
-  constructor(message: string, code: string, status: number) {
-    super(message);
-    this.code = code;
-    this.status = status;
-    this.name = "AppError";
-  }
+export function createAppError(message: string, code: string, status: number): AppError {
+  return { message, code, status };
 }

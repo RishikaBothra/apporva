@@ -46,7 +46,7 @@ export const deleteTeam = async (id: number): Promise<number> => {
   return deleted.length;
 };
 
-export async function isUserInTeam(userId: number, teamId: number) {
+export async function isUserInTeam(userId: number, teamId: number): Promise<boolean> {
   const result = await db()
     .select()
     .from(teamMember)
@@ -60,38 +60,38 @@ export async function isUserInTeam(userId: number, teamId: number) {
   return result.length > 0;
 }
 
-export async function removeUserFromTeam(userId: number) {
+export async function removeUserFromTeam(userId: number):Promise<void> {
   await db()
     .delete(teamMember)
     .where(eq(teamMember.userId, userId));
 }
 
-export async function getTeamMembership(userId: number) {
+export async function getTeamMembership(userId: number):Promise<{ userId: number; teamId: number } | null> {
   const result = await db()
-    .select()
+    .select({ userId: teamMember.userId, teamId: teamMember.teamId })
     .from(teamMember)
     .where(eq(teamMember.userId, userId));
 
   return result[0] || null;
 }
 
-export async function addUserToTeam(userId: number, teamId: number) {
+export async function addUserToTeam(userId: number, teamId: number):Promise<void> {
   await db().insert(teamMember).values({
     userId,
     teamId,
   });
 }
 
-export async function findTeamById(teamId: number) {
+export async function findTeamById(teamId: number) : Promise<{ id: number; name: string; managerId: number | null } | null>{
   const result = await db()
-    .select()
+    .select({ id: team.id, name: team.name, managerId: team.managerId })
     .from(team)
     .where(eq(team.id, teamId));
 
   return result[0] || null;
 }
 
-export async function updateTeamManager(teamId: number, newManagerId: number | null) {
+export async function updateTeamManager(teamId: number, newManagerId: number | null) :Promise<void>{
   await db()
     .update(team)
     .set({ managerId: newManagerId as any })

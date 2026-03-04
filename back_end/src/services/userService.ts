@@ -1,7 +1,7 @@
 import { updateUserRole } from "src/db/repositories/user_repository";
 import { findUserById } from "src/db/repositories/team_repository";
 import { env } from "src/config/env";
-import { AppError } from "../utils/app-error";
+import { createAppError } from "../utils/app-error";
 import { updateUserById } from "src/db/repositories/user_repository";
 import bcrypt from "bcrypt";
 
@@ -60,7 +60,7 @@ export async function updateProfile(
   }
 
   if (Object.keys(updateData).length === 0) {
-    throw new AppError("No fields provided for update", "NO_UPDATE_FIELDS", 400);
+    throw createAppError("No fields provided for update", "NO_UPDATE_FIELDS", 400);
   }
 
   return await updateUserById(userId, updateData);
