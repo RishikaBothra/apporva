@@ -12,7 +12,7 @@ const expenseSchema = z.object({
   createdBy: z.number().optional(),
 });
 
-router.post("/", authMiddleware(), async (req, res: Response) => {
+router.post("/draft", authMiddleware(), async (req, res: Response) => {
   try {
     const parsed = expenseSchema.safeParse(req.body);
 
@@ -45,5 +45,7 @@ router.post("/", authMiddleware(), async (req, res: Response) => {
     return res.status(500).json({ message: "Failed to create expense" });
   }
 });
+
+
 
 export default router;
