@@ -25,6 +25,8 @@ export const getExpenseById = async (id: number) => {
     .select({
       id: expense.id,
       userId: expense.userId,
+      title: expense.title,
+      amount: expense.amount,
       status: expense.status,
     })
     .from(expense)
@@ -38,5 +40,16 @@ export const updateExpenseStatus = async (id: number, status: "draft" | "submitt
     .update(expense)
     .set({ status,
       updatedAt: new Date() })
+    .where(eq(expense.id, id));
+};
+
+
+export const updateExpense = async (
+  id: number,
+  data: Partial<Pick<CreateExpenseInput, "title" | "amount" | "description">>
+) => {
+  await db()
+    .update(expense)
+    .set({ ...data, updatedAt: new Date() })
     .where(eq(expense.id, id));
 };
