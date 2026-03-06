@@ -1,7 +1,9 @@
 import { CreateExpenseInput } from "src/types/expense.type";
-import { createExpense } from "../db/repositories/expense_repository";
-import { getExpenseById } from "../db/repositories/expense_repository";
-import { updateExpenseStatus } from "../db/repositories/expense_repository";
+import {
+  createExpense,
+  getExpenseById,
+  updateExpenseStatus,
+} from "../db/repositories/expense_repository";
 
 export const createExpenseService = async ({
   title,
@@ -17,7 +19,7 @@ export const createExpenseService = async ({
     title,
     description,
     amount,
-    createdBy: userId,
+    userId,
   });
 
   return;
@@ -30,7 +32,7 @@ export const submitExpenseService = async (expenseId: number, userId: number) =>
     throw new Error("Expense not found");
   }
 
-  if (expenseData.createdBy !== userId) {
+  if (expenseData.userId !== userId) {
     throw new Error("Unauthorized to submit this expense");
   }
 
@@ -41,4 +43,5 @@ export const submitExpenseService = async (expenseId: number, userId: number) =>
   await updateExpenseStatus(expenseId, "submitted");
 
   return;
-}
+};
+

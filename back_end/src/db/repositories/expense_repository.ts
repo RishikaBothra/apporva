@@ -1,25 +1,19 @@
 import { db } from "../db.client";
 import { expense } from "../schema/expense";
 import { eq } from "drizzle-orm";
-
-type CreateExpenseRepoInput = {
-  title: string;
-  description: string;
-  amount: number;
-  createdBy: number;
-};
+import { CreateExpenseInput } from "src/types/expense.type";
 
 export const createExpense = async ({
   title,
   description,
   amount,
-  createdBy,
-}: CreateExpenseRepoInput) => {
+  userId,
+}: CreateExpenseInput) => {
   await db().insert(expense).values({
     title,
     description,
     amount,
-    userId: createdBy,
+    userId,
     status: "draft",
   });
 
@@ -30,7 +24,7 @@ export const getExpenseById = async (id: number) => {
   const result = await db()
     .select({
       id: expense.id,
-      createdBy: expense.userId,
+      userId: expense.userId,
       status: expense.status,
     })
     .from(expense)
