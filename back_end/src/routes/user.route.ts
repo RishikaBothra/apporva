@@ -17,7 +17,7 @@ router.get("/", authMiddleware(), (req: Request, res: Response) => {
 });
 
 const changeRoleSchema = z.object({
-  tragtedId: z.number(),
+  targtedId: z.number(),
   newRole: z.enum(["employee", "manager", "admin"]),
   platformSecret: z.string().optional(),
 });
@@ -25,7 +25,7 @@ const changeRoleSchema = z.object({
 router.patch("/",authMiddleware("admin"),async (req: Request, res: Response) => {
     try {
       const {
-        tragtedId: userId,
+        targtedId: userId,
         newRole,
         platformSecret,
       } = changeRoleSchema.parse(req.body);

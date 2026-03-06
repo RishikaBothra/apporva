@@ -97,3 +97,40 @@ export async function updateTeamManager(teamId: number, newManagerId: number | n
     .set({ managerId: newManagerId as any })
     .where(eq(team.id, teamId));
 }
+export async function findUsersByTeamId(teamId: number,): Promise<{ id: number; fullName: string; email: string; role: string }[]> {
+
+    const result = await db()
+        .select({
+            id: users.id,
+            fullName: users.fullName,
+            email: users.email,
+            role: users.role,
+        })
+        .from(teamMember)
+        .innerJoin(users, eq(teamMember.userId, users.id))
+        .where(eq(teamMember.teamId, teamId));
+
+    return result;
+}
+
+export async function findTeamByUserId(userId: number,): Promise<{ teamId: number } | null> {
+
+  const result = await db()
+    .select({teamId: teamMember.teamId,})
+    .from(teamMember)
+    .where(eq(teamMember.userId, userId));
+
+  return result[0] ?? null;
+}
+
+export async function findAllTeams(): Promise<{ id: number; name: string; managerId: number }[]> {
+  const result = await db()
+    .select({
+      id: team.id,
+      name: team.name,
+      managerId: team.managerId,
+    })
+    .from(team);
+
+  return result;
+}
