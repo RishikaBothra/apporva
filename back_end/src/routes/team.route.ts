@@ -4,12 +4,40 @@ import { z } from "zod";
 import { role } from "../types/user.type";
 import { createTeamService } from "../services/teamService";
 import { deleteTeamById } from "../services/teamService";
+import { getMyTeamMembersService } from "../services/teamService";
+import { getTeamDetailsService } from "../services/teamService";
+import { getAllTeamsService } from "../services/teamService";
 
 const router = Router();
 
 const teamSchema = z.object({
   name: z.string().min(2).max(100),
   managerId: z.number(),
+});
+
+const teamMembersQuerySchema = z.object({
+  teamId: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number(val) : undefined))
+    .refine((val) => val === undefined || (Number.isInteger(val) && val > 0), {
+      message: "teamId must be a positive integer",
+    }),
+});
+
+const teamDetailsQuerySchema = z.object({
+  teamId: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number(val) : undefined))
+    .refine(
+      (val) =>
+        val === undefined ||
+        (Number.isInteger(val) && val > 0),
+      {
+        message: "teamId must be a positive integer",
+      }
+    ),
 });
 
 router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
@@ -53,16 +81,107 @@ router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
   }
 });
 
-router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Response) => {
+router.delete("/delete/:id", authMiddleware(role.admin), async (req, res: Response): Promise<void> => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ message: "Invalid team id" });
+    return;
+  }
   try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ message: "Invalid team id" });
-    }
     await deleteTeamById(id);
-    res.status(200).json({ message: "Team deleted successfully" });
-  } catch (error: any) {
-    res.status(404).json({ message: error.message });
+    res.status(200).json({message: "Team deleted successfully",});
+  }
+  catch (error: unknown) {
+    const message = error instanceof Error? error.message: "Failed to delete team";
+    res.status(message === "Team not found" ? 404 : 500).json({message,});
+  }
+});
+
+router.get("/members",authMiddleware(),async (req, res: Response): Promise<void> => {
+  try {
+    const parsed = teamMembersQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({message: "Invalid query parameters",});
+      return;  
+    }
+    
+    const teamId = parsed.data.teamId;
+    const result = await getMyTeamMembersService(req.user.id,teamId);
+    res.status(200).json({ data: result });
+
+  }
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === "User not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+
+      if (error.message === "Access denied") {
+        res.status(403).json({ message: error.message });
+        return;
+      }
+      
+      res.status(400).json({ message: error.message });
+      return;
+    }
+    
+    res.status(500).json({message: "Internal server error",});
+  }
+});
+
+router.get("/details",authMiddleware(),async (req, res: Response): Promise<void> => {
+  try {
+    const parsed = teamDetailsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({message: "Invalid query parameters",});
+      return;
+    }
+
+    const teamId = parsed.data.teamId;
+    const result = await getTeamDetailsService(
+      req.user.id,
+      teamId
+    );
+    res.status(200).json({ data: result });
+  }
+
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === "User not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      
+      if (error.message === "Access denied") {
+        res.status(403).json({ message: error.message });
+        return;
+      }
+      
+      if (error.message === "Team not found") {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+
+      res.status(400).json({ message: error.message });
+      return;
+    }
+
+    res.status(500).json({message: "Internal server error",});
+  }
+});
+
+router.get("/all",authMiddleware(role.admin),async (req, res: Response): Promise<void> => {
+  try {
+    const result = await getAllTeamsService(req.user.id);
+    res.status(200).json({ data: result });
+  }
+  catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({message: error.message,});
+      return;
+    }
+    res.status(500).json({message: "Internal server error",});
   }
 });
 
