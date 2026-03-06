@@ -3,12 +3,21 @@ import { authMiddleware } from "../middleware/auth-middleware";
 import { z } from "zod";
 import { createExpenseService } from "../services/expenseService";
 import { submitExpenseService } from "../services/expenseService";
-
+import { updateExpenseService } from "../services/expenseService";
+  
 const router = Router();
 
 const expenseSchema = z.object({
-  title: z.string().min(2).max(255),
-  amount: z.number().positive(),
+  title: z.string().trim().min(1, "Title should not be empty").max(255),
+  amount: z
+    .any()
+    .refine(
+      (value) => value !== "" && value !== null && value !== undefined,
+      "Amount should not be empty"
+    )
+    .transform((value) => Number(value))
+    .refine((value) => !Number.isNaN(value), "Amount must be a number")
+    .refine((value) => value > 0, "Amount must be greater than zero"),
   description: z.string().min(2).max(255),
   createdBy: z.number().optional(),
 });
@@ -19,7 +28,7 @@ router.post("/draft", authMiddleware(), async (req, res: Response) => {
 
     if (!parsed.success) {
       return res.status(400).json({
-        message: "Invalid input",
+        message: parsed.error.issues[0]?.message ?? "Invalid input",
       });
     }
 
@@ -83,6 +92,7 @@ router.patch("/submit/:id", authMiddleware(), async (req, res: Response) => {
     return res.status(500).json({ message: "Failed to submit expense" });
   }
 });
-    
+
+
 
 export default router;
