@@ -1,9 +1,8 @@
-import { Router, type Response } from "express";
+import { Router,Request, type Response } from "express";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { z } from "zod";
 import { role } from "../types/user.type";
-import { createTeamService } from "../services/teamService";
-import { deleteTeamById } from "../services/teamService";
+import { createTeamService, deleteTeamById, addMemberService } from "../services/teamService";
 import { getMyTeamMembersService } from "../services/teamService";
 import { getTeamDetailsService } from "../services/teamService";
 import { getAllTeamsService } from "../services/teamService";
@@ -59,7 +58,9 @@ router.post("/", authMiddleware(role.admin), async (req, res: Response) => {
       userId,
     });
 
-    return res.status(201).json(result);
+    return res.status(201).json({
+      message: "Team created successfully"
+    });
   } catch (err: any) {
     if (err.message === "Team name already exists") {
       return res.status(409).json({ message: err.message });
@@ -184,5 +185,29 @@ router.get("/all",authMiddleware(role.admin),async (req, res: Response): Promise
     res.status(500).json({message: "Internal server error",});
   }
 });
+
+router.post(
+  "/add/member",
+  authMiddleware(),
+  async (req: Request, res: Response) => {
+    try {
+      const { userId, teamId } = req.body;
+
+      if (!userId || !teamId) {
+        return res.status(400).json({ message: "Missing fields" });
+      }
+
+      await addMemberService(req.user.id, userId, teamId);
+
+      return res.status(200).json({
+        message: "Employee added successfully",
+      });
+    } catch (err: any) {
+      const status = err?.status ?? 500;
+      const code = err?.code ?? "INTERNAL_ERROR";
+      return res.status(status).json({ message: err.message, code });
+    }
+  }
+);
 
 export default router;

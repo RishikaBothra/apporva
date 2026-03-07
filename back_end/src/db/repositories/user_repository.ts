@@ -3,6 +3,7 @@ import { users } from "../schema/user";
 import { eq } from "drizzle-orm";
 import type { UserRole } from "../schema/user";
 import { Role } from "src/types/user.type";
+import { createAppError } from "src/utils/app-error";
 
 export async function findUserByEmail(email: string): Promise<
     | {
@@ -11,7 +12,7 @@ export async function findUserByEmail(email: string): Promise<
           password: string;
           role: Role;
       }
-    | undefined
+    | null
 > {
     const result = await db()
         .select({
@@ -52,4 +53,29 @@ export async function updateUserRole(userId: number,newRole: UserRole): Promise<
   .update(users)
   .set({ role: newRole })
   .where(eq(users.id, userId));
+}
+
+export async function updateUserById(
+  id: number,
+  data: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  }
+): Promise<boolean> {
+  try {
+    const result = await db()
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
+      .returning();
+
+    return result.length > 0;
+  } catch (error: any) {
+    const cause = error?.cause;
+    if (cause?.code === "23505" && cause?.constraint_name?.includes("email")) {
+      throw createAppError("This email is already in use", "EMAIL_ALREADY_IN_USE", 409);
+    }
+    throw new Error(`[Database Error] Failed to update user: ${error.message}`);
+  }
 }

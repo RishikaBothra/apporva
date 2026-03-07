@@ -1,6 +1,9 @@
 import { updateUserRole } from "src/db/repositories/user_repository";
 import { findUserById } from "src/db/repositories/team_repository";
 import { env } from "src/config/env";
+import { createAppError } from "../utils/app-error";
+import { updateUserById } from "src/db/repositories/user_repository";
+import bcrypt from "bcrypt";
 
 export const changeUserRoleService = async (
   adminId: number,
@@ -28,3 +31,37 @@ export const changeUserRoleService = async (
 
   await updateUserRole(userId, newRole);
 };
+
+export async function updateProfile(
+  userId: number,
+  data: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  }
+): Promise<boolean> {
+  const updateData: {
+    fullName?: string;
+    email?: string;
+    password?: string;
+  } = {};
+
+  if (data.fullName) {
+    updateData.fullName = data.fullName;
+  }
+
+  if (data.email) {
+    updateData.email = data.email;
+  }
+
+  if (data.password) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    updateData.password = hashedPassword;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw createAppError("No fields provided for update", "NO_UPDATE_FIELDS", 400);
+  }
+
+  return await updateUserById(userId, updateData);
+}
