@@ -48,7 +48,7 @@ export const deleteTeam = async (id: number): Promise<number> => {
 
 export async function isUserInTeam(userId: number, teamId: number): Promise<boolean> {
   const result = await db()
-    .select()
+    .select({ userId: teamMember.userId })
     .from(teamMember)
     .where(
       and(
