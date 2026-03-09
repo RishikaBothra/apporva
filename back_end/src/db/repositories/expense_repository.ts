@@ -59,3 +59,12 @@ export const deleteExpense = async (id: number) => {
     .delete(expense)
     .where(eq(expense.id, id));
 };
+
+export const getExpensesByUserId = async (userId: number) => {
+  const result = await db()
+    .select()
+    .from(expense)
+    .where(eq(expense.userId, userId));
+
+  return result;
+};

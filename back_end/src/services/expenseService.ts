@@ -5,6 +5,7 @@ import {
   updateExpenseStatus,
   updateExpense,
   deleteExpense,
+  getExpensesByUserId,
 } from "../db/repositories/expense_repository";
 
 export const createExpenseService = async ({
@@ -109,4 +110,9 @@ export const deleteExpenseService = async (expenseId: number, userId: number) =>
 
   return;
 }
+
+export const getExpensesByUserIdService = async (userId: number) => {
+  const expenses = await getExpensesByUserId(userId);
+  return expenses;
+};
 

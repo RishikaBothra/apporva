@@ -1,7 +1,7 @@
 import { Router, type Response } from "express";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { z } from "zod";
-import { createExpenseService } from "../services/expenseService";
+import { createExpenseService, getExpensesByUserIdService } from "../services/expenseService";
 import { submitExpenseService } from "../services/expenseService";
 import { updateExpenseService } from "../services/expenseService";
 import { deleteExpenseService } from "../services/expenseService";
@@ -208,6 +208,16 @@ router.delete("/delete/:id", authMiddleware(), async (req, res: Response) => {
       });
     }
     return res.status(500).json({ message: "Failed to delete expense" });
+  }
+});
+
+router.get("/", authMiddleware(), async (req, res: Response) => {
+  try {
+    const userId = req.user.id;
+    const expenses = await getExpensesByUserIdService(userId);
+    return res.status(200).json({ expenses });
+  } catch (err: any) {
+    return res.status(500).json({ message: "Failed to fetch expenses" });
   }
 });
 
