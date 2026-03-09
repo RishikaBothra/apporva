@@ -4,6 +4,7 @@ import {
   getExpenseById,
   updateExpenseStatus,
   updateExpense,
+  deleteExpense,
 } from "../db/repositories/expense_repository";
 
 export const createExpenseService = async ({
@@ -85,6 +86,26 @@ export const updateExpenseService = async (expenseId: number, userId: number, da
   }
 
   await updateExpense(expenseId, updateData);
+
+  return;
+}
+
+export const deleteExpenseService = async (expenseId: number, userId: number) => {
+  const expenseData = await getExpenseById(expenseId);
+
+  if (!expenseData) {
+    throw new Error("Expense not found");
+  }
+
+  if (expenseData.userId !== userId) {
+    throw new Error("Unauthorized to delete this expense");
+  }
+
+  if (expenseData.status !== "draft") {
+    throw new Error("Only draft expenses can be deleted");
+  }
+
+  await deleteExpense(expenseId);
 
   return;
 }

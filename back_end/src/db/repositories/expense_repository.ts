@@ -53,3 +53,9 @@ export const updateExpense = async (
     .set({ ...data, updatedAt: new Date() })
     .where(eq(expense.id, id));
 };
+
+export const deleteExpense = async (id: number) => {
+  await db()
+    .delete(expense)
+    .where(eq(expense.id, id));
+};

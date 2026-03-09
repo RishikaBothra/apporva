@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createExpenseService } from "../services/expenseService";
 import { submitExpenseService } from "../services/expenseService";
 import { updateExpenseService } from "../services/expenseService";
+import { deleteExpenseService } from "../services/expenseService";
   
 const router = Router();
 
@@ -170,6 +171,43 @@ router.patch("/update/:id", authMiddleware(), async (req, res: Response) => {
       });
     }
     return res.status(500).json({ message: "Failed to update expense" });
+  }
+});
+
+router.delete("/delete/:id", authMiddleware(), async (req, res: Response) => {
+  try {
+    const parsedId = z.coerce.number().int().positive().safeParse(req.params.id);
+    
+    if (!parsedId.success) {
+      return res.status(400).json({
+        message: "Invalid input",
+      });
+    }
+
+    const id = parsedId.data;
+    const userId = req.user.id;
+    await deleteExpenseService(id, userId);
+
+    return res.status(200).json({ message: "Expense deleted successfully" });
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({
+        message: "Invalid input",
+      });
+    } else if (err.message.includes("Expense not found")) {
+      return res.status(404).json({
+        message: "Expense not found",
+      });
+    } else if (err.message.includes("Unauthorized to delete this expense")) {
+      return res.status(403).json({
+        message: "Unauthorized to delete this expense",
+      });
+    } else if (err.message.includes("Only draft expenses can be deleted")) {
+      return res.status(400).json({
+        message: "Only draft expenses can be deleted",
+      });
+    }
+    return res.status(500).json({ message: "Failed to delete expense" });
   }
 });
 
